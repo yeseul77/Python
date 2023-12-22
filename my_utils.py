@@ -44,8 +44,8 @@ def get_puuid(nickname, tag):
     return puuid
 
 
-def get_match_id(puuid,num):
-    url = f'https://asia.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids?start=0&count={num}&api_key={api_key}'
+def get_match_id(puuid, num):
+    url = f'https://asia.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids?type=ranked&start=0&count={num}&api_key={api_key}'
     match_list = requests.get(url).json()
     return match_list
 
@@ -57,18 +57,19 @@ def get_matches_timelines(matchid):
     timelines = requests.get(url2).json()
     return matches, timelines
 
+
 def get_rawdata(tier):
-    division_list = ['I','II','III','IV']
+    division_list = ['I', 'II', 'III', 'IV']
     lst = []
-    page = random.randrange(1,20)
+    page = random.randrange(1, 20)
     print('get summonerId....')
-    
+
     for division in tqdm(division_list):
         url = f'https://kr.api.riotgames.com/lol/league/v4/entries/RANKED_SOLO_5x5/{tier}/{division}?page={page}&api_key={api_key}'
         res = requests.get(url).json()
-        lst += random.sample(res,3)
+        lst += random.sample(res, 3)
     # lst라는 변수에서 summonerId만 리스트에 담기
-    summoner_id_list = list(map(lambda x:x['summonerId'] ,lst))
+    summoner_id_list = list(map(lambda x: x['summonerId'], lst))
     # summonerId가 담긴 리스트를 통해 puuId
     print('get puuId.....')
     puu_id_list = []
@@ -77,20 +78,19 @@ def get_rawdata(tier):
         res = requests.get(url).json()
         puu_id = res['puuid']
         puu_id_list.append(puu_id)
-    
+
     print('get match_id....')
     match_id_list = []
-    #puuId를 통해 matchId를 가져오기 -> 3개씩 담기
+    # puuId를 통해 matchId를 가져오기 -> 3개씩 담기
     for puu_id in tqdm(puu_id_list):
-        match_ids = get_match_id(puu_id,3)
+        match_ids = get_match_id(puu_id, 3)
         match_id_list.extend(match_ids)
     print('get matches & timeline....')
     df_create = []
     for match_id in tqdm(match_id_list):
-        matches,timelines = get_matches_timelines(match_id)
-        df_create.append([match_id,matches,timelines])
-    #matches,timeline을 불러서 이중리스트를 만들고 데이터프레임으로 만들어서 - [match_id,matches,timelines]
-    df =pd.DataFrame(df_create,columns = ['match_id','matches','timelines'])
+        matches, timelines = get_matches_timelines(match_id)
+        df_create.append([match_id, matches, timelines])
+    # matches,timeline을 불러서 이중리스트를 만들고 데이터프레임으로 만들어서 - [match_id,matches,timelines]
+    df = pd.DataFrame(df_create, columns=['match_id', 'matches', 'timelines'])
     return df
-    
-    
+
