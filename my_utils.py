@@ -12,7 +12,8 @@ seoul_api_key = '73734d4770796f6f36354474436765'
 def get_df(url):
     url_re = url.replace('(인증키)', seoul_api_key).replace('xml', 'json').replace('/5/', '/1000/')
     res = requests.get(url_re).json()
-    df = pd.DataFrame(res[url.split('/')[-4]]['row'])
+    key = list(res.keys())[0]
+    df = pd.DataFrame(res[key]['row'])
     return df
 
 
